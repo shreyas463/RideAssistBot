@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
-import { Card, Title, Paragraph, Button, useTheme, Avatar } from 'react-native-paper';
+import { Card, Title, Paragraph, Button, useTheme, Avatar, IconButton } from 'react-native-paper';
 import { getRideStatusText } from '../models/Ride';
 import { getPlaceholderImage } from '../utils/AssetUtils';
+import SimpleMapView from './SimpleMapView';
 
 /**
  * Component to display ride status information
@@ -14,6 +15,7 @@ import { getPlaceholderImage } from '../utils/AssetUtils';
  */
 export default function RideStatusCard({ ride, onViewDetails }) {
   const theme = useTheme();
+  const [showMap, setShowMap] = useState(false);
   
   if (!ride) {
     return (
@@ -32,8 +34,20 @@ export default function RideStatusCard({ ride, onViewDetails }) {
   return (
     <Card style={styles.card}>
       <Card.Content>
-        <Title>Ride Status</Title>
+        <View style={styles.headerContainer}>
+          <Title>Ride Status</Title>
+          <IconButton
+            icon={showMap ? "map-marker-off" : "map-marker"}
+            size={24}
+            onPress={() => setShowMap(!showMap)}
+            color={theme.colors.primary}
+          />
+        </View>
         <Paragraph style={styles.statusText}>{getRideStatusText(ride.status)}</Paragraph>
+        
+        {showMap && (
+          <SimpleMapView />
+        )}
         
         <View style={styles.driverContainer}>
           {ride.driver && (
@@ -77,6 +91,11 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     marginHorizontal: 16,
     elevation: 4
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
   },
   statusText: {
     fontWeight: 'bold',

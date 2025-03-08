@@ -1,25 +1,67 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { createRide, createDriver, RideStatus } from '../models/Ride';
-import { v4 as uuidv4 } from 'uuid';
 
 // Create context
 const MockModeContext = createContext({
   isMockModeEnabled: true,
   setMockModeEnabled: () => {},
   getMockRide: () => {},
-  getMockResponses: () => []
+  getMockResponses: () => [],
+  getDriverLocation: () => {}
 });
+
+// Simple function to generate a random ID without using crypto
+const generateSimpleId = (prefix) => {
+  return `${prefix}-${Math.floor(Math.random() * 10000)}-${Date.now().toString().slice(-4)}`;
+};
 
 /**
  * Mock mode provider component
  */
 export function MockModeProvider({ children }) {
   const [isMockModeEnabled, setMockModeEnabled] = useState(true);
+  const [driverLocation, setDriverLocation] = useState(null);
+  
+  // Default locations (San Francisco area)
+  const defaultLocations = {
+    driver: { latitude: 37.7749, longitude: -122.4194 },
+    pickup: { latitude: 37.7849, longitude: -122.4094 },
+    dropoff: { latitude: 37.7649, longitude: -122.4294 }
+  };
+  
+  // Simulate driver movement
+  useEffect(() => {
+    if (isMockModeEnabled) {
+      // Initialize driver location
+      setDriverLocation(defaultLocations.driver);
+      
+      // Update driver location every 5 seconds
+      const interval = setInterval(() => {
+        setDriverLocation(prev => {
+          if (!prev) return defaultLocations.driver;
+          
+          // Move driver closer to pickup location
+          const moveTowards = (prev.latitude < defaultLocations.pickup.latitude) ? 
+            { ...prev, latitude: prev.latitude + 0.0005 } : 
+            { ...prev, longitude: prev.longitude + 0.0005 };
+            
+          return moveTowards;
+        });
+      }, 5000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isMockModeEnabled]);
+
+  // Get current driver location
+  const getDriverLocation = () => {
+    return driverLocation || defaultLocations.driver;
+  };
 
   // Generate a mock ride
   const getMockRide = () => {
     const driver = createDriver(
-      'driver-' + uuidv4().substring(0, 8),
+      generateSimpleId('driver'),
       'John Smith',
       '+1-555-123-4567',
       'Toyota Camry',
@@ -27,8 +69,8 @@ export function MockModeProvider({ children }) {
       4.8
     );
 
-    return createRide(
-      'ride-' + uuidv4().substring(0, 8),
+    const ride = createRide(
+      generateSimpleId('ride'),
       '123 Main St',
       '456 Market St',
       new Date(),
@@ -36,6 +78,12 @@ export function MockModeProvider({ children }) {
       driver,
       'user123'
     );
+    
+    // Add location data for the map
+    ride.pickupCoordinates = defaultLocations.pickup;
+    ride.dropoffCoordinates = defaultLocations.dropoff;
+    
+    return ride;
   };
 
   // Mock responses for the chatbot
@@ -56,7 +104,8 @@ export function MockModeProvider({ children }) {
         isMockModeEnabled, 
         setMockModeEnabled,
         getMockRide,
-        getMockResponses
+        getMockResponses,
+        getDriverLocation
       }}
     >
       {children}

@@ -15,22 +15,30 @@ export const PLACEHOLDER_IMAGES = {
 };
 
 /**
- * Get a placeholder image URI for use in the app
- * 
- * @param {string} type - The type of placeholder image to get
- * @returns {string} The image URI
+ * Returns a placeholder image URL based on the type
+ * @param {string} type - The type of placeholder image to return
+ * @returns {string} - The URL of the placeholder image
  */
-export function getPlaceholderImage(type) {
-  return PLACEHOLDER_IMAGES[type] || PLACEHOLDER_IMAGES.ICON;
-}
+export const getPlaceholderImage = (type) => {
+  switch (type) {
+    case 'DRIVER':
+      return 'https://randomuser.me/api/portraits/men/32.jpg';
+    case 'USER':
+      return 'https://randomuser.me/api/portraits/women/44.jpg';
+    case 'CAR':
+      return 'https://www.pngitem.com/pimgs/m/45-450861_car-top-view-png-transparent-png.png';
+    default:
+      return 'https://via.placeholder.com/150';
+  }
+};
 
 /**
- * Create a placeholder app icon in the assets directory
- * This is a simple implementation that would need to be replaced with actual
- * image generation in a real app
+ * Create placeholder assets for the app
+ * This is a simple implementation that uses in-memory assets
+ * In a real app, you would generate actual image files
  */
 export function createPlaceholderAssets() {
-  console.log('Using placeholder assets. In a real app, you would generate actual image files here.');
+  console.log('Using in-memory placeholder assets');
   
   // In a real implementation, this would create actual PNG files in the assets directory
   // For this demo, we'll use the base64 encoded SVGs defined above

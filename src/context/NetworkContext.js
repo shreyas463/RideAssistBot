@@ -15,12 +15,13 @@ export function NetworkProvider({ children }) {
 
   // Set up network listener
   useEffect(() => {
+    // Initial check
+    checkConnection();
+    
+    // Set up listener
     const unsubscribe = NetInfo.addEventListener(state => {
       setIsConnected(state.isConnected);
     });
-
-    // Initial check
-    checkConnection();
 
     // Clean up listener
     return () => unsubscribe();
@@ -28,8 +29,14 @@ export function NetworkProvider({ children }) {
 
   // Function to manually check connection
   const checkConnection = async () => {
-    const state = await NetInfo.fetch();
-    setIsConnected(state.isConnected);
+    try {
+      const state = await NetInfo.fetch();
+      setIsConnected(state.isConnected);
+    } catch (error) {
+      console.error('Error checking network connection:', error);
+      // Default to connected if there's an error checking
+      setIsConnected(true);
+    }
   };
 
   return (
